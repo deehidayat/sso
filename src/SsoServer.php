@@ -1,5 +1,6 @@
 <?php namespace Zhimei\sso;
 
+use Auth;
 
 class SsoServer {
 
@@ -36,7 +37,6 @@ class SsoServer {
      */
     public function attach()
     {
-
         $token = app('request')->input('token', '');
         $token = preg_replace('/[^a-z0-9]/i', '', $token);
         if(strlen($token)<20){
@@ -49,7 +49,13 @@ class SsoServer {
         if($session_id){
             $userInfo = $this->getUserBySessionId($session_id);
             if(empty($userInfo)){
-                return view('sso::login');
+                if (Auth::user()) {
+                    $this->setSessionIdByAccessToken($access_token, $session_id);
+                    $this->setUserBySessionId($session_id, Auth::user()->toArray());
+                    return redirect($this->getRedirectUrl(['access_token' => $access_token]));
+                } else {
+                    return view('sso::login');
+                }
             }else{
                 return redirect($this->getRedirectUrl(['access_token' => $access_token]));
             }
@@ -58,7 +64,13 @@ class SsoServer {
             $this->setSessionIdByAccessToken($access_token, $session_id);
             $userInfo = $this->getUserBySessionId($session_id);
             if(empty($userInfo)){
-                return view('sso::login');
+                if (Auth::user()) {
+                    $this->setSessionIdByAccessToken($access_token, $session_id);
+                    $this->setUserBySessionId($session_id, Auth::user()->toArray());
+                    return redirect($this->getRedirectUrl(['access_token' => $access_token]));
+                } else {
+                    return view('sso::login');
+                }
             }else{
                 return redirect($this->getRedirectUrl(['access_token' => $access_token]));
             }
